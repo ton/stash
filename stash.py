@@ -8,7 +8,7 @@ def run(command_line, stdin=None, silent=False):
     """Returns a tuple representing the return code and the resulting output
     after running the specified *command_line*. All input for
     the process can be specified using *stdin*. In case *silent*
-    is ``False``, all output of the process is redirected to /dev/null, and
+    is ``True``, all output of the process is redirected to /dev/null, and
     ``None`` is returned for the process output.
     """
     if silent:
