@@ -25,3 +25,8 @@ The following is a listing of the help instructions from `stash`:
 Note that in case applying a patch causes a conflict, the patch will be merged into the original conflicting file
 similar to `merge`. For more information, see the man page of `patch`, specifically the description of the `--merge`
 command line option.
+
+# Bash completion support
+
+To get support for auto completing patch names in BASH, make sure that the `stash-completion.bash` script is sourced in
+your `.bashrc` or something similar, and that you execute the stash script by directly executing `stash.py`.
