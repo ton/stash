@@ -2,7 +2,6 @@
 
 This script supports stashing changes for Mercurial repositories à la `git stash`. The only difference with `git stash`
 is that changes are not stored in a stack, but rather as a named patch in a predefined location (`~/.patches`).
-location is hardcoded to `~/.patches`.
 
 # Usage
 
