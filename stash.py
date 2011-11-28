@@ -32,7 +32,7 @@ def run(command_line, stdin=None, silent=False):
         return (subprocess.Popen(command_line, shell=True, stdin=stdin, stdout=fnull, stderr=fnull).wait(), None)
     else:
         p = subprocess.Popen(command_line, shell=True, stdin=stdin, stdout=subprocess.PIPE)
-        return (p.wait(), p.communicate()[0])
+        return (p.wait(), p.communicate()[0].decode('utf-8'))
 
 RepositoryTypes = enum(
   MERCURIAL = 'Mercurial'
@@ -41,6 +41,10 @@ RepositoryTypes = enum(
 
   * ``MERCURIAL = 'Mercurial'``
 """
+
+# Ensure Python 2.x compatability.
+try: input = raw_input
+except: pass
 
 class StashException(Exception):
     pass
@@ -62,7 +66,7 @@ class Stash(object):
     def list_patches(self):
         """Prints a list of all patches present in the current stash."""
         for patch in self.patches:
-            print patch
+            print(patch)
 
     def show_patch(self, patch_name):
         """Prints the specified patch *patch_name* to standard out.
@@ -70,7 +74,7 @@ class Stash(object):
         :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
         """
         if patch_name in self.patches:
-            print open(self._get_patch_path(patch_name), 'r').read()
+            print(open(self._get_patch_path(patch_name), 'r').read())
         else:
             raise StashException("patch '%s' does not exist" % patch_name)
 
@@ -113,12 +117,12 @@ class MercurialStash(Stash):
 
             if patch_returncode == 0:
                 # Applying the patch succeeded, remove stashed patch.
-                print "Applying patch '%s' succeeded, removing stashed patch." % patch_name
+                print("Applying patch '%s' succeeded, removing stashed patch." % patch_name)
                 os.unlink(self._get_patch_path(patch_name))
             else:
                 # The patch did not apply cleanly, inform the user that the
                 # patch will not be removed.
-                print "Patch '%s' did not apply successfully, stashed patch will not be removed." % patch_name
+                print("Patch '%s' did not apply successfully, stashed patch will not be removed." % patch_name)
         else:
             raise StashException("patch '%s' does not exist" % patch_name)
 
@@ -146,25 +150,25 @@ class MercurialStash(Stash):
             # give the user an option to overwrite the patch.
             patch_path = self._get_patch_path(patch_name)
             while os.path.exists(patch_path):
-                yes_no_answer = raw_input("Warning, patch '%s' already exists, overwrite [Y/n]? " % patch_name)
+                yes_no_answer = input("Warning, patch '%s' already exists, overwrite [Y/n]? " % patch_name)
                 if not yes_no_answer or yes_no_answer.lower() == 'y':
                     os.unlink(patch_path)
                 elif yes_no_answer.lower() == 'n':
                     patch_name = None
                     while not patch_name:
-                        patch_name = raw_input("Please provide a different patch name: ")
+                        patch_name = input("Please provide a different patch name: ")
                     patch_path = self._get_patch_path(patch_name)
 
             # Create the patch.
-            patch_file = open(patch_path, 'w')
-            patch_file.write(patch)
+            patch_file = open(patch_path, 'wb')
+            patch_file.write(patch.encode('utf-8'))
             patch_file.close()
 
             pre_file_status = set(run('hg stat')[1].splitlines())
 
             if diff_process_return_code == 0:
                 run('hg revert --all', silent=True)
-                print "Done stashing changes for patch '%s'." % patch_name
+                print("Done stashing changes for patch '%s'." % patch_name)
 
             post_file_status = set(run('hg stat')[1].splitlines())
             changed_file_status = post_file_status.difference(pre_file_status)
@@ -176,7 +180,7 @@ class MercurialStash(Stash):
                 if status_line[0] == '?':
                     os.unlink(status_line[2:])
         else:
-            print "No changes to stash, patch '%s' not created." % patch_name
+            print("No changes to stash, patch '%s' not created." % patch_name)
 
 def get_repository_path_and_type():
     """Returns a tuple of the root directory and type of the repository.
@@ -232,4 +236,4 @@ if __name__ == '__main__':
         else:
             parser.print_help()
     except StashException as e:
-        print "Error: %s." % e
+        print("Error: %s." % e)
