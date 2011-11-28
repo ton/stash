@@ -192,7 +192,7 @@ def get_repository_path_and_type():
     while current_path != '/':
         if '.hg' in os.listdir(current_path):
             return (current_path, RepositoryTypes.MERCURIAL)
-        current_path = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+        current_path = os.path.abspath(os.path.join(current_path, os.pardir))
     raise StashException("no valid repository found")
 
 if __name__ == '__main__':
