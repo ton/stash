@@ -51,17 +51,19 @@ class StashException(Exception):
 
 class Stash(object):
 
+    PATCHES_PATH = os.path.expanduser('~/.patches')
+
     def __init__(self):
         # Check if the patches path exists, and in case it does not, create it.
-        self.patches_path = os.path.expanduser('~/.patches')
-        if not os.path.exists(self.patches_path):
-            os.mkdir(self.patches_path)
+        if not os.path.exists(self.PATCHES_PATH):
+            os.mkdir(self.PATCHES_PATH)
 
-        self.patches = os.listdir(self.patches_path)
+        self.patches = os.listdir(self.PATCHES_PATH)
+
 
     def _get_patch_path(self, patch_name):
         """Returns the absolute path for patch *patch_name*."""
-        return os.path.join(self.patches_path, patch_name) if patch_name else None
+        return os.path.join(self.PATCHES_PATH, patch_name) if patch_name else None
 
     def list_patches(self):
         """Prints a list of all patches present in the current stash."""
