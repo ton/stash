@@ -93,8 +93,8 @@ class Stash(object):
         raise StashException("no valid repository found")
 
     def list_patches(self):
-        """Prints a list of all patches present in the current stash."""
-        for patch in self.patches:
+        """Prints the names of all currently stashed patches."""
+        for patch in os.listdir(self.PATCHES_PATH):
             print(patch)
 
     def show_patch(self, patch_name):
