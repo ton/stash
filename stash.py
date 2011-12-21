@@ -60,10 +60,39 @@ class Stash(object):
 
         self.patches = os.listdir(self.PATCHES_PATH)
 
+    @classmethod
+    def create(cls):
+        # Determine the repository type, and the root directory for the
+        # repository.
+        (repository_root, repository_type) = cls._get_repository_path_and_type()
+
+        # Switch the root process of the current process to the repository root.
+        os.chdir(repository_root)
+
+        if repository_type == RepositoryTypes.MERCURIAL:
+            return MercurialStash()
 
     def _get_patch_path(self, patch_name):
         """Returns the absolute path for patch *patch_name*."""
         return os.path.join(self.PATCHES_PATH, patch_name) if patch_name else None
+
+    @classmethod
+    def _get_repository_path_and_type(cls):
+        """Returns a tuple of the root directory and type of the repository.
+
+        :raises: :py:exc:`~StashException` in case no repository was found.
+        """
+        # Look at the directories present in the current working directory. In case
+        # a .hg directory is present, we know we are in the root directory of a
+        # Mercurial repository. In case no repository specific folder is found, and
+        # the current directory has a parent directory, look if a repository
+        # specific directory can be found in the parent directory.
+        current_path = os.getcwd()
+        while current_path != '/':
+            if '.hg' in os.listdir(current_path):
+                return (current_path, RepositoryTypes.MERCURIAL)
+            current_path = os.path.abspath(os.path.join(current_path, os.pardir))
+        raise StashException("no valid repository found")
 
     def list_patches(self):
         """Prints a list of all patches present in the current stash."""
@@ -184,23 +213,6 @@ class MercurialStash(Stash):
         else:
             print("No changes to stash, patch '%s' not created." % patch_name)
 
-def get_repository_path_and_type():
-    """Returns a tuple of the root directory and type of the repository.
-
-    :raises: :py:exc:`~StashException` in case no repository was found.
-    """
-    # Look at the directories present in the current working directory. In case
-    # a .hg directory is present, we know we are in the root directory of a
-    # Mercurial repository. In case no repository specific folder is found, and
-    # the current directory has a parent directory, look if a repository
-    # specific directory can be found in the parent directory.
-    current_path = os.getcwd()
-    while current_path != '/':
-        if '.hg' in os.listdir(current_path):
-            return (current_path, RepositoryTypes.MERCURIAL)
-        current_path = os.path.abspath(os.path.join(current_path, os.pardir))
-    raise StashException("no valid repository found")
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Stash HG changes to the patch directory (~/.patches).')
     parser.add_argument('-l', '--list', dest='show_list', action='store_true', help='list all currently stashed patches')
@@ -215,15 +227,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        # Determine the repository type, and the root directory for the
-        # repository.
-        (repository_root, repository_type) = get_repository_path_and_type()
+        stash = Stash.create()
 
-        # Switch the root process of the current process to the repository root.
-        os.chdir(repository_root)
-
-        if repository_type == RepositoryTypes.MERCURIAL:
-            stash = MercurialStash()
         if args.show_list:
             stash.list_patches()
         elif args.patch_name is not None:
