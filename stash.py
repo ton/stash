@@ -70,9 +70,10 @@ class Stash(object):
         if repository_type == RepositoryTypes.MERCURIAL:
             return MercurialStash()
 
-    def _get_patch_path(self, patch_name):
+    @classmethod
+    def _get_patch_path(cls, patch_name):
         """Returns the absolute path for patch *patch_name*."""
-        return os.path.join(self.PATCHES_PATH, patch_name) if patch_name else None
+        return os.path.join(cls.PATCHES_PATH, patch_name) if patch_name else None
 
     @classmethod
     def _get_repository_path_and_type(cls):
@@ -92,19 +93,33 @@ class Stash(object):
             current_path = os.path.abspath(os.path.join(current_path, os.pardir))
         raise StashException("no valid repository found")
 
-    def list_patches(self):
+    @classmethod
+    def list_patches(cls):
         """Prints the names of all currently stashed patches."""
-        for patch in os.listdir(self.PATCHES_PATH):
+        for patch in os.listdir(cls.PATCHES_PATH):
             print(patch)
 
-    def show_patch(self, patch_name):
+    @classmethod
+    def remove_patch(cls, patch_name):
+        """Removes patch *patch_name* from the stash (in case it exists).
+
+        :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
+        """
+        try:
+            os.unlink(cls._get_patch_path(patch_name))
+            print("Patch '%s' successfully removed." % patch_name)
+        except:
+            raise StashException("patch '%s' does not exist" % patch_name)
+
+    @classmethod
+    def show_patch(cls, patch_name):
         """Prints the specified patch *patch_name* to standard out.
 
         :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
         """
-        if patch_name in self.patches:
-            print(open(self._get_patch_path(patch_name), 'r').read())
-        else:
+        try:
+            print(open(cls._get_patch_path(patch_name), 'r').read())
+        except:
             raise StashException("patch '%s' does not exist" % patch_name)
 
 class MercurialStash(Stash):
@@ -152,16 +167,6 @@ class MercurialStash(Stash):
                 # The patch did not apply cleanly, inform the user that the
                 # patch will not be removed.
                 print("Patch '%s' did not apply successfully, stashed patch will not be removed." % patch_name)
-        else:
-            raise StashException("patch '%s' does not exist" % patch_name)
-
-    def remove_patch(self, patch_name):
-        """Removes patch *patch_name* from the stash (in case it exists).
-
-        :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
-        """
-        if patch_name in self.patches:
-            os.unlink(self._get_patch_path(patch_name))
         else:
             raise StashException("patch '%s' does not exist" % patch_name)
 
@@ -225,16 +230,15 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        stash = Stash.create()
-
         if args.show_list:
-            stash.list_patches()
+            Stash.list_patches()
+        elif args.remove_patch:
+            Stash.remove_patch(args.patch_name)
+        elif args.show_patch:
+            Stash.show_patch(args.patch_name)
         elif args.patch_name is not None:
-            if args.remove_patch:
-                stash.remove_patch(args.patch_name)
-            elif args.show_patch:
-                stash.show_patch(args.patch_name)
-            elif args.apply_patch:
+            stash = Stash.create()
+            if args.apply_patch:
                 stash.apply_patch(args.patch_name)
             else:
                 stash.create_patch(args.patch_name)
