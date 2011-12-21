@@ -94,10 +94,9 @@ class Stash(object):
         raise StashException("no valid repository found")
 
     @classmethod
-    def list_patches(cls):
-        """Prints the names of all currently stashed patches."""
-        for patch in os.listdir(cls.PATCHES_PATH):
-            print(patch)
+    def get_patches(cls):
+        """Returns the names of all currently stashed patches."""
+        return os.listdir(cls.PATCHES_PATH)
 
     @classmethod
     def remove_patch(cls, patch_name):
@@ -107,18 +106,17 @@ class Stash(object):
         """
         try:
             os.unlink(cls._get_patch_path(patch_name))
-            print("Patch '%s' successfully removed." % patch_name)
         except:
             raise StashException("patch '%s' does not exist" % patch_name)
 
     @classmethod
-    def show_patch(cls, patch_name):
-        """Prints the specified patch *patch_name* to standard out.
+    def get_patch(cls, patch_name):
+        """Returns the contents of the specified patch *patch_name*.
 
         :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
         """
         try:
-            print(open(cls._get_patch_path(patch_name), 'r').read())
+            return open(cls._get_patch_path(patch_name), 'r').read()
         except:
             raise StashException("patch '%s' does not exist" % patch_name)
 
@@ -231,11 +229,13 @@ if __name__ == '__main__':
 
     try:
         if args.show_list:
-            Stash.list_patches()
+            for patch in Stash.get_patches():
+                print patch
         elif args.remove_patch:
             Stash.remove_patch(args.patch_name)
+            print("Patch '%s' successfully removed." % patch_name)
         elif args.show_patch:
-            Stash.show_patch(args.patch_name)
+            print Stash.get_patch(args.patch_name)
         elif args.patch_name is not None:
             stash = Stash.create()
             if args.apply_patch:
