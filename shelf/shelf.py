@@ -26,10 +26,6 @@ RepositoryTypes = enum(
   * ``MERCURIAL = 'Mercurial'``
 """
 
-# Ensure Python 2.x compatability.
-try: input = raw_input
-except: pass
-
 class ShelfException(Exception):
     """Base class for all exceptions generated during an operation on the
     shelf.
