@@ -230,7 +230,7 @@ if __name__ == '__main__':
                 print patch
         elif args.remove_patch:
             Stash.remove_patch(args.patch_name)
-            print("Patch '%s' successfully removed." % patch_name)
+            print("Patch '%s' successfully removed." % args.patch_name)
         elif args.show_patch:
             print Stash.get_patch(args.patch_name)
         elif args.patch_name is not None:
