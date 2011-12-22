@@ -7,6 +7,10 @@ from abc import ABCMeta, abstractmethod
 
 from shelf.exception import ShelfException
 
+class FileStatus(object):
+    """Enum for all possible file states that are handled by shelf."""
+    Added, Removed = range(2)
+
 class Repository(object, metaclass=ABCMeta):
     """Abstract class that defines an interface for all functionality required
     by :py:class:`~shelf.shelf.Shelf` to properly interface with a version
@@ -136,4 +140,11 @@ class MercurialRepository(Repository):
 
     def status(self):
         """See :py:meth:`~shelf.repository.Repository.status`."""
-        return set(self._execute('hg stat')[1].splitlines())
+        # return set(self._execute('hg stat')[1].splitlines())
+        result = set()
+        for line in self._execute('hg stat')[1].splitlines():
+            if line[0] == '?':
+                result.add((FileStatus.Added, line[2:].strip()))
+            elif line[0] == '!':
+                result.add((FileStatus.Removed, line[2:].strip()))
+        return result

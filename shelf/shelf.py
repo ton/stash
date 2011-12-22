@@ -2,7 +2,7 @@ import os
 import subprocess
 
 from shelf.exception import ShelfException
-from shelf.repository import Repository
+from shelf.repository import Repository, FileStatus
 
 class Shelf(object):
     """This class manages the collection of patches that have been shelved from
@@ -65,37 +65,25 @@ class Shelf(object):
         :raises: :py:exc:`~shelf.exception.ShelfException` in case *patch_name* does not exist.
         """
         if patch_name in self.get_patches():
+            patch_path = self._get_patch_path(patch_name)
+
+            # Apply the patch, and determine the files that have been added and
+            # removed.
             pre_file_status = self.repository.status()
-
-            # Apply the patch, and merge with local changes.
-            patch_return_code = self.repository.apply_patch(self._get_patch_path(patch_name))
-
-            post_file_status = self.repository.status()
-            changed_file_status = post_file_status.difference(pre_file_status)
+            patch_return_code = self.repository.apply_patch(patch_path)
+            changed_file_status = self.repository.status().difference(pre_file_status)
 
             # Determine all files that have been added.
-            added_files = []
-            for status_line in changed_file_status:
-                if status_line[0] == '?':
-                    added_files.append(status_line[2:])
-
-            # Determine all files that have been removed.
-            removed_files = []
-            for status_line in changed_file_status:
-                if status_line[0] == '!':
-                    removed_files.append(status_line[2:])
-
-            # Add and remove all files that have been marked as added or removed
-            # respectively.
-            if added_files:
-                self.repository.add(added_files)
-            if removed_files:
-                self.repository.remove(removed_files)
+            for status, file_name in changed_file_status:
+                if status == FileStatus.Added:
+                    self.repository.add([file_name])
+                elif status == FileStatus.Removed:
+                    self.repository.remove([file_name])
 
             if patch_return_code == 0:
                 # Applying the patch succeeded, remove shelved patch.
                 print("Applying patch '%s' succeeded, removing shelved patch." % patch_name)
-                os.unlink(self._get_patch_path(patch_name))
+                os.unlink(patch_path)
             else:
                 # The patch did not apply cleanly, inform the user that the
                 # patch will not be removed.
@@ -118,27 +106,25 @@ class Shelf(object):
 
         # Determine the contents for the new patch.
         patch = self.repository.diff()
-
         if patch:
-
             # Create the patch.
             patch_file = open(patch_path, 'wb')
             patch_file.write(patch.encode('utf-8'))
             patch_file.close()
 
+            # Undo all changes in the repository, and determine which files have
+            # been added or removed. Files that were added, need to be removed
+            # again.
             pre_file_status = self.repository.status()
-
             self.repository.revert_all()
-            print("Done shelving changes for patch '%s'." % patch_name)
-
-            post_file_status = self.repository.status()
-            changed_file_status = post_file_status.difference(pre_file_status)
+            changed_file_status = self.repository.status().difference(pre_file_status)
 
             # Remove all files that are created by the patch that is now being
             # shelved.
-            added_files = []
-            for status_line in changed_file_status:
-                if status_line[0] == '?':
-                    os.unlink(os.path.join(self.repository.root_path, status_line[2:]))
+            for status, file_name in changed_file_status:
+                if status == FileStatus.Added:
+                    os.unlink(os.path.join(self.repository.root_path, file_name))
+
+            print("Done shelving changes for patch '%s'." % patch_name)
         else:
             print("No changes in repository, patch '%s' not created." % patch_name)
