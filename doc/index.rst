@@ -3,21 +3,23 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Shelve
-======
+Shelve documentation
+====================
 
-Contents:
+Welcome to the documentation of shelve, a tool to temporarily shelve away
+changes for Mercurial and Subversion repositories.
+
+Installation is simple:
+
+.. code-block:: none
+
+    # easy_install -U shelve
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
 
    command-line
    API
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-

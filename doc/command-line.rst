@@ -47,12 +47,3 @@ Bash completion support
 When installing shelve, a command-line completion script is automatically
 installed to ``/etc/bash_completion.d``. This provides support for auto
 completing patch names in Bash.
-
-Installation
-============
-
-To install shelve:
-
-.. code-block:: none
-
-    # easy_install -U shelve

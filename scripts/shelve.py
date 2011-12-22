@@ -3,7 +3,8 @@
 import argparse
 import os
 
-from shelf.shelf import Shelf, ShelfException
+from shelf.exception import ShelfException
+from shelf.shelf import Shelf
 
 parser = argparse.ArgumentParser(description='Shelve HG changes to the shelf directory (~/.shelf).')
 parser.add_argument('-l', '--list', dest='show_list', action='store_true', help='list all currently shelved patches')
@@ -27,7 +28,7 @@ try:
     elif args.show_patch:
         print(Shelf.get_patch(args.patch_name))
     elif args.patch_name is not None:
-        shelf = Shelf.create(os.getcwd())
+        shelf = Shelf(os.getcwd())
         if args.apply_patch:
             shelf.apply_patch(args.patch_name)
         else:

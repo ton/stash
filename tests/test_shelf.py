@@ -2,7 +2,7 @@ import os
 
 from nose.tools import assert_equal, assert_raises
 
-from shelf import Shelf, ShelfException
+from shelf.shelf import Shelf, ShelfException
 from shelf.test_case import ShelfTestCase
 
 class TestShelf(ShelfTestCase):

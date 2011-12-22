@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from shelf import Shelf
+from shelf.shelf import Shelf
 
 class ShelfTestCase(unittest.TestCase):
     """Base class for test cases that test shelve functionality.
