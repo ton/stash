@@ -42,8 +42,6 @@ class Stash(object):
         if not os.path.exists(self.PATCHES_PATH):
             os.mkdir(self.PATCHES_PATH)
 
-        self.patches = os.listdir(self.PATCHES_PATH)
-
         self.repository_root = repository_root
 
     @classmethod
@@ -128,7 +126,7 @@ class MercurialStash(Stash):
 
         :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
         """
-        if patch_name in self.patches:
+        if patch_name in self.get_patches():
             pre_file_status = set(self.run('hg stat')[1].splitlines())
 
             # Apply the patch, and merge with local changes.
