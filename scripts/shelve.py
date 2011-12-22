@@ -30,7 +30,12 @@ try:
     elif args.patch_name is not None:
         shelf = Shelf(os.getcwd())
         if args.apply_patch:
-            shelf.apply_patch(args.patch_name)
+            if shelf.apply_patch(args.patch_name):
+                print("Applying patch '%s' succeeded, shelved patch has been removed." % patch_name)
+            else:
+                # The patch did not apply cleanly, inform the user that the
+                # patch will not be removed.
+                print("Patch '%s' did not apply successfully, shelved patch will not be removed." % patch_name)
         else:
             # Check if patch already exists, if it does, issue a warning and
             # give the user an option to overwrite the patch.
@@ -43,7 +48,10 @@ try:
                     while not args.patch_name:
                         args.patch_name = input("Please provide a different patch name: ")
 
-            shelf.create_patch(args.patch_name)
+            if shelf.create_patch(args.patch_name):
+                print("Done shelving changes for patch '%s'." % patch_name)
+            else:
+                print("No changes in repository, patch '%s' not created." % patch_name)
     else:
         parser.print_help()
 except ShelfException as e:

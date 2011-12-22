@@ -60,7 +60,8 @@ class Shelf(object):
     def apply_patch(self, patch_name):
         """Applies the patch *patch_name* on to the current working directory in
         case the patch exists. In case applying the patch was successfull, the
-        patch is automatically removed from the shelf.
+        patch is automatically removed from the shelf. Returns ``True`` in case
+        applying the patch was successfull, otherwise ``False`` is returned.
 
         :raises: :py:exc:`~shelf.exception.ShelfException` in case *patch_name* does not exist.
         """
@@ -82,12 +83,9 @@ class Shelf(object):
 
             if patch_return_code == 0:
                 # Applying the patch succeeded, remove shelved patch.
-                print("Applying patch '%s' succeeded, removing shelved patch." % patch_name)
                 os.unlink(patch_path)
-            else:
-                # The patch did not apply cleanly, inform the user that the
-                # patch will not be removed.
-                print("Patch '%s' did not apply successfully, shelved patch will not be removed." % patch_name)
+
+            return patch_return_code == 0
         else:
             raise ShelfException("patch '%s' does not exist" % patch_name)
 
@@ -95,7 +93,8 @@ class Shelf(object):
         """Creates a patch based on the changes in the current repository. In
         case the specified patch *patch_name* already exists, ask the user to
         overwrite the patch. In case creating the patch was successfull, all
-        changes in the current repository are reverted.
+        changes in the current repository are reverted. Returns ``True`` in case
+        a patch was created, and ``False`` otherwise.
 
         :raises: :py:exc:`~shelf.exception.ShelfException` in case *patch_name* already exists.
         """
@@ -106,7 +105,7 @@ class Shelf(object):
 
         # Determine the contents for the new patch.
         patch = self.repository.diff()
-        if patch:
+        if patch != '':
             # Create the patch.
             patch_file = open(patch_path, 'wb')
             patch_file.write(patch.encode('utf-8'))
@@ -125,6 +124,5 @@ class Shelf(object):
                 if status == FileStatus.Added:
                     os.unlink(os.path.join(self.repository.root_path, file_name))
 
-            print("Done shelving changes for patch '%s'." % patch_name)
-        else:
-            print("No changes in repository, patch '%s' not created." % patch_name)
+        # Return whether a non-empty patch was created.
+        return patch != ''
