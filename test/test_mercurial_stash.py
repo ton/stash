@@ -180,3 +180,20 @@ class TestMercurialStash(StashTestCase):
 
         # The patch applied cleanly, so it should no longer exist.
         assert_not_in(self.PATCH_NAME, stash.get_patches())
+
+    def test_stashing_existing_patch_raises_exception(self):
+        """Test that stashing an already existing patch raises an exception."""
+        stash = Stash.create(self.REPOSITORY_URI)
+
+        # Create a bogus patch.
+        open(os.path.join(self.PATCHES_PATH, self.PATCH_NAME), 'w').close()
+
+        # Modify a file, and create a patch that conflicts with the already
+        # existing patch.
+        file_name = os.path.join(self.REPOSITORY_URI, 'a')
+        f = open(file_name, 'w+')
+        f.write('321')
+        f.close()
+
+        # Creating a patch with an existing name should raise an exception.
+        assert_raises(StashException, stash.create_patch, self.PATCH_NAME)

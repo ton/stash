@@ -170,23 +170,18 @@ class MercurialStash(Stash):
         case the specified patch *patch_name* already exists, ask the user to
         overwrite the patch. In case creating the patch was successfull, all
         changes in the current repository are reverted.
+
+        :raises: :py:exc:`~StashException` in case *patch_name* already exists.
         """
+        # Raise an exception in case the specified patch already exists.
+        patch_path = self._get_patch_path(patch_name)
+        if os.path.exists(patch_path):
+            raise StashException("patch '%s' already exists" % patch_name)
+
         # Determine the contents for the new patch.
         (diff_process_return_code, patch) = self.run('hg diff -a')
 
         if diff_process_return_code == 0 and patch:
-            # Check if patch already exists, if it does, issue a warning and
-            # give the user an option to overwrite the patch.
-            patch_path = self._get_patch_path(patch_name)
-            while os.path.exists(patch_path):
-                yes_no_answer = input("Warning, patch '%s' already exists, overwrite [Y/n]? " % patch_name)
-                if not yes_no_answer or yes_no_answer.lower() == 'y':
-                    os.unlink(patch_path)
-                elif yes_no_answer.lower() == 'n':
-                    patch_name = None
-                    while not patch_name:
-                        patch_name = input("Please provide a different patch name: ")
-                    patch_path = self._get_patch_path(patch_name)
 
             # Create the patch.
             patch_file = open(patch_path, 'wb')
@@ -238,6 +233,17 @@ if __name__ == '__main__':
             if args.apply_patch:
                 stash.apply_patch(args.patch_name)
             else:
+                # Check if patch already exists, if it does, issue a warning and
+                # give the user an option to overwrite the patch.
+                while args.patch_name in stash.get_patches():
+                    yes_no_answer = input("Warning, patch '%s' already exists, overwrite [Y/n]? " % args.patch_name)
+                    if not yes_no_answer or yes_no_answer.lower() == 'y':
+                        stash.remove_patch(args.patch_name)
+                    elif yes_no_answer.lower() == 'n':
+                        args.patch_name = None
+                        while not args.patch_name:
+                            args.patch_name = input("Please provide a different patch name: ")
+
                 stash.create_patch(args.patch_name)
         else:
             parser.print_help()
