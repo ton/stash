@@ -31,6 +31,9 @@ try: input = raw_input
 except: pass
 
 class ShelfException(Exception):
+    """Base class for all exceptions generated during an operation on the
+    shelf.
+    """
     pass
 
 class Shelf(object):
@@ -45,15 +48,6 @@ class Shelf(object):
         self.repository_root = repository_root
 
     @classmethod
-    def create(cls, path):
-        # Determine the repository type, and the root directory for the
-        # repository.
-        (repository_root, repository_type) = cls._get_repository_path_and_type(path)
-
-        if repository_type == RepositoryTypes.MERCURIAL:
-            return MercurialShelf(repository_root)
-
-    @classmethod
     def _get_patch_path(cls, patch_name):
         """Returns the absolute path for patch *patch_name*."""
         return os.path.join(cls.SHELF_PATH, patch_name) if patch_name else None
@@ -63,7 +57,7 @@ class Shelf(object):
         """Returns a tuple of the root directory and type of the repository
         located at *path*.
 
-        :raises: :py:exc:`~ShelfException` in case no repository was found.
+        :raises: :py:exc:`~shelf.shelf.ShelfException` in case no repository was found.
         """
         # Look at the directories present in the current working directory. In case
         # a .hg directory is present, we know we are in the root directory of a
@@ -77,6 +71,15 @@ class Shelf(object):
         raise ShelfException("no valid repository found")
 
     @classmethod
+    def create(cls, path):
+        # Determine the repository type, and the root directory for the
+        # repository.
+        (repository_root, repository_type) = cls._get_repository_path_and_type(path)
+
+        if repository_type == RepositoryTypes.MERCURIAL:
+            return MercurialShelf(repository_root)
+
+    @classmethod
     def get_patches(cls):
         """Returns the names of all shelved patches."""
         return os.listdir(cls.SHELF_PATH)
@@ -85,7 +88,7 @@ class Shelf(object):
     def remove_patch(cls, patch_name):
         """Removes patch *patch_name* from the shelf (in case it exists).
 
-        :raises: :py:exc:`~ShelfException` in case *patch_name* does not exist.
+        :raises: :py:exc:`~shelf.shelf.ShelfException` in case *patch_name* does not exist.
         """
         try:
             os.unlink(cls._get_patch_path(patch_name))
@@ -96,7 +99,7 @@ class Shelf(object):
     def get_patch(cls, patch_name):
         """Returns the contents of the specified patch *patch_name*.
 
-        :raises: :py:exc:`~ShelfException` in case *patch_name* does not exist.
+        :raises: :py:exc:`~shelf.shelf.ShelfException` in case *patch_name* does not exist.
         """
         try:
             return open(cls._get_patch_path(patch_name), 'r').read()
@@ -171,7 +174,7 @@ class MercurialShelf(Shelf):
         overwrite the patch. In case creating the patch was successfull, all
         changes in the current repository are reverted.
 
-        :raises: :py:exc:`~ShelfException` in case *patch_name* already exists.
+        :raises: :py:exc:`~shelf.shelf.ShelfException` in case *patch_name* already exists.
         """
         # Raise an exception in case the specified patch already exists.
         patch_path = self._get_patch_path(patch_name)

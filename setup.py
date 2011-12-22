@@ -12,7 +12,7 @@ setup(
     description = ('Shelve changes for source code repositories similar to `git stash`.'),
     license = 'BSD',
     packages=['shelf'],
-    long_description=read('README.md'),
+    long_description=read('README.rst'),
     scripts=['scripts/shelve.py'],
     data_files=[('/etc/bash_completion.d/', ['shelve-completion.bash'])],
     url='https://github.com/ton/shelve',
