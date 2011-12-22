@@ -198,7 +198,7 @@ class MercurialStash(Stash):
             pre_file_status = set(self.run('hg stat')[1].splitlines())
 
             if diff_process_return_code == 0:
-                self.run('hg revert --all', silent=True)
+                self.run('hg revert -C --all', silent=True)
                 print("Done stashing changes for patch '%s'." % patch_name)
 
             post_file_status = set(self.run('hg stat')[1].splitlines())
