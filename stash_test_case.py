@@ -1,6 +1,5 @@
 import os
 import shutil
-import subprocess
 import unittest
 
 from stash import Stash
@@ -12,8 +11,8 @@ class StashTestCase(unittest.TestCase):
     environment.
     """
 
-    PATCHES_PATH = '.patches'
-    REPOSITORY_URI = '.repo'
+    PATCHES_PATH = os.path.join('test', '.patches')
+    REPOSITORY_URI = os.path.join('test', '.repo')
 
     @classmethod
     def setUpClass(cls):
