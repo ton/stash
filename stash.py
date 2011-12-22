@@ -130,7 +130,7 @@ class MercurialStash(Stash):
             pre_file_status = set(self.run('hg stat')[1].splitlines())
 
             # Apply the patch, and merge with local changes.
-            (patch_returncode, _) = self.run('patch -p1 --merge', stdin=open(self._get_patch_path(patch_name), 'r'))
+            (patch_returncode, _) = self.run('patch -p1 --no-backup-if-mismatch --merge', stdin=open(self._get_patch_path(patch_name), 'r'))
 
             post_file_status = set(self.run('hg stat')[1].splitlines())
             changed_file_status = post_file_status.difference(pre_file_status)
