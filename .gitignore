@@ -1,2 +1,4 @@
+build/
+shelve.egg-info/
 __pyclass__
 *.pyc

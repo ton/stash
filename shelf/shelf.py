@@ -30,17 +30,17 @@ RepositoryTypes = enum(
 try: input = raw_input
 except: pass
 
-class StashException(Exception):
+class ShelfException(Exception):
     pass
 
-class Stash(object):
+class Shelf(object):
 
-    PATCHES_PATH = os.path.expanduser('~/.patches')
+    SHELF_PATH = os.path.expanduser('~/.shelf')
 
     def __init__(self, repository_root):
         # Check if the patches path exists, and in case it does not, create it.
-        if not os.path.exists(self.PATCHES_PATH):
-            os.mkdir(self.PATCHES_PATH)
+        if not os.path.exists(self.SHELF_PATH):
+            os.mkdir(self.SHELF_PATH)
 
         self.repository_root = repository_root
 
@@ -51,19 +51,19 @@ class Stash(object):
         (repository_root, repository_type) = cls._get_repository_path_and_type(path)
 
         if repository_type == RepositoryTypes.MERCURIAL:
-            return MercurialStash(repository_root)
+            return MercurialShelf(repository_root)
 
     @classmethod
     def _get_patch_path(cls, patch_name):
         """Returns the absolute path for patch *patch_name*."""
-        return os.path.join(cls.PATCHES_PATH, patch_name) if patch_name else None
+        return os.path.join(cls.SHELF_PATH, patch_name) if patch_name else None
 
     @classmethod
     def _get_repository_path_and_type(cls, path):
         """Returns a tuple of the root directory and type of the repository
         located at *path*.
 
-        :raises: :py:exc:`~StashException` in case no repository was found.
+        :raises: :py:exc:`~ShelfException` in case no repository was found.
         """
         # Look at the directories present in the current working directory. In case
         # a .hg directory is present, we know we are in the root directory of a
@@ -74,34 +74,34 @@ class Stash(object):
             if '.hg' in os.listdir(path):
                 return (path, RepositoryTypes.MERCURIAL)
             path = os.path.abspath(os.path.join(path, os.pardir))
-        raise StashException("no valid repository found")
+        raise ShelfException("no valid repository found")
 
     @classmethod
     def get_patches(cls):
-        """Returns the names of all currently stashed patches."""
-        return os.listdir(cls.PATCHES_PATH)
+        """Returns the names of all shelved patches."""
+        return os.listdir(cls.SHELF_PATH)
 
     @classmethod
     def remove_patch(cls, patch_name):
-        """Removes patch *patch_name* from the stash (in case it exists).
+        """Removes patch *patch_name* from the shelf (in case it exists).
 
-        :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
+        :raises: :py:exc:`~ShelfException` in case *patch_name* does not exist.
         """
         try:
             os.unlink(cls._get_patch_path(patch_name))
         except:
-            raise StashException("patch '%s' does not exist" % patch_name)
+            raise ShelfException("patch '%s' does not exist" % patch_name)
 
     @classmethod
     def get_patch(cls, patch_name):
         """Returns the contents of the specified patch *patch_name*.
 
-        :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
+        :raises: :py:exc:`~ShelfException` in case *patch_name* does not exist.
         """
         try:
             return open(cls._get_patch_path(patch_name), 'r').read()
         except:
-            raise StashException("patch '%s' does not exist" % patch_name)
+            raise ShelfException("patch '%s' does not exist" % patch_name)
 
     def run(self, command_line, stdin=None, silent=False):
         """Returns a tuple representing the return code and the resulting output
@@ -117,14 +117,14 @@ class Stash(object):
             p = subprocess.Popen(command_line, shell=True, stdin=stdin, stdout=subprocess.PIPE, cwd=self.repository_root)
         return (p.wait(), p.communicate()[0].decode('utf-8'))
 
-class MercurialStash(Stash):
+class MercurialShelf(Shelf):
 
     def apply_patch(self, patch_name):
         """Applies the patch *patch_name* on to the current working directory in
         case the patch exists. In case applying the patch was successfull, the
-        patch is automatically removed from the stash.
+        patch is automatically removed from the shelf.
 
-        :raises: :py:exc:`~StashException` in case *patch_name* does not exist.
+        :raises: :py:exc:`~ShelfException` in case *patch_name* does not exist.
         """
         if patch_name in self.get_patches():
             pre_file_status = set(self.run('hg stat')[1].splitlines())
@@ -155,15 +155,15 @@ class MercurialStash(Stash):
                 self.run('hg rm %s' % (' '.join(removed_files)))
 
             if patch_returncode == 0:
-                # Applying the patch succeeded, remove stashed patch.
-                print("Applying patch '%s' succeeded, removing stashed patch." % patch_name)
+                # Applying the patch succeeded, remove shelved patch.
+                print("Applying patch '%s' succeeded, removing shelved patch." % patch_name)
                 os.unlink(self._get_patch_path(patch_name))
             else:
                 # The patch did not apply cleanly, inform the user that the
                 # patch will not be removed.
-                print("Patch '%s' did not apply successfully, stashed patch will not be removed." % patch_name)
+                print("Patch '%s' did not apply successfully, shelved patch will not be removed." % patch_name)
         else:
-            raise StashException("patch '%s' does not exist" % patch_name)
+            raise ShelfException("patch '%s' does not exist" % patch_name)
 
     def create_patch(self, patch_name):
         """Creates a patch based on the changes in the current repository. In
@@ -171,12 +171,12 @@ class MercurialStash(Stash):
         overwrite the patch. In case creating the patch was successfull, all
         changes in the current repository are reverted.
 
-        :raises: :py:exc:`~StashException` in case *patch_name* already exists.
+        :raises: :py:exc:`~ShelfException` in case *patch_name* already exists.
         """
         # Raise an exception in case the specified patch already exists.
         patch_path = self._get_patch_path(patch_name)
         if os.path.exists(patch_path):
-            raise StashException("patch '%s' already exists" % patch_name)
+            raise ShelfException("patch '%s' already exists" % patch_name)
 
         # Determine the contents for the new patch.
         (diff_process_return_code, patch) = self.run('hg diff -a')
@@ -192,60 +192,16 @@ class MercurialStash(Stash):
 
             if diff_process_return_code == 0:
                 self.run('hg revert -C --all', silent=True)
-                print("Done stashing changes for patch '%s'." % patch_name)
+                print("Done shelving changes for patch '%s'." % patch_name)
 
             post_file_status = set(self.run('hg stat')[1].splitlines())
             changed_file_status = post_file_status.difference(pre_file_status)
 
             # Remove all files that are created by the patch that is now being
-            # stashed.
+            # shelved.
             added_files = []
             for status_line in changed_file_status:
                 if status_line[0] == '?':
                     os.unlink(os.path.join(self.repository_root, status_line[2:]))
         else:
-            print("No changes to stash, patch '%s' not created." % patch_name)
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Stash HG changes to the patch directory (~/.patches).')
-    parser.add_argument('-l', '--list', dest='show_list', action='store_true', help='list all currently stashed patches')
-    parser.add_argument('-r', '--remove', dest='remove_patch', action='store_true', \
-            help='remove the specified patch from the stash')
-    parser.add_argument('-s', '--show', dest='show_patch', action='store_true', \
-            help='shows the contents of the specified patch from the stash')
-    parser.add_argument('-a', '--apply', dest='apply_patch', action='store_true', \
-            help='apply the specified patch in the stash, and remove it in case it applied successfully')
-    parser.add_argument('patch_name', nargs='?', metavar='<patch name>', help='name of the patch to operate on')
-
-    args = parser.parse_args()
-
-    try:
-        if args.show_list:
-            for patch in Stash.get_patches():
-                print patch
-        elif args.remove_patch:
-            Stash.remove_patch(args.patch_name)
-            print("Patch '%s' successfully removed." % args.patch_name)
-        elif args.show_patch:
-            print Stash.get_patch(args.patch_name)
-        elif args.patch_name is not None:
-            stash = Stash.create(os.getcwd())
-            if args.apply_patch:
-                stash.apply_patch(args.patch_name)
-            else:
-                # Check if patch already exists, if it does, issue a warning and
-                # give the user an option to overwrite the patch.
-                while args.patch_name in stash.get_patches():
-                    yes_no_answer = input("Warning, patch '%s' already exists, overwrite [Y/n]? " % args.patch_name)
-                    if not yes_no_answer or yes_no_answer.lower() == 'y':
-                        stash.remove_patch(args.patch_name)
-                    elif yes_no_answer.lower() == 'n':
-                        args.patch_name = None
-                        while not args.patch_name:
-                            args.patch_name = input("Please provide a different patch name: ")
-
-                stash.create_patch(args.patch_name)
-        else:
-            parser.print_help()
-    except StashException as e:
-        print("Error: %s." % e)
+            print("No changes in repository, patch '%s' not created." % patch_name)
