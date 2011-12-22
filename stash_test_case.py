@@ -36,3 +36,8 @@ class StashTestCase(unittest.TestCase):
         # Clean up the temporary repository.
         if os.path.exists(cls.REPOSITORY_URI):
             shutil.rmtree(cls.REPOSITORY_URI)
+
+    def tearDown(self):
+        """Removes all stashed patches."""
+        for patch_name in os.listdir(self.PATCHES_PATH):
+            os.unlink(os.path.join(self.PATCHES_PATH, patch_name))
