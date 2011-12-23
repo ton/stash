@@ -1,6 +1,5 @@
 import os
 import shutil
-import subprocess
 
 from nose.tools import assert_in, assert_equal, assert_not_in, assert_raises, assert_true
 
