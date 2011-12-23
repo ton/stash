@@ -17,7 +17,7 @@ class Repository(object, metaclass=ABCMeta):
     control system.
     """
 
-    def __init__(self, path):
+    def __init__(self, path, create=False):
         """Creating a concrete repository instance is done using the factory
         method :py:meth:`~shelf.repository.Repository.__new__`. After the
         factory has created a class instance, the repository is initialized by
@@ -27,9 +27,23 @@ class Repository(object, metaclass=ABCMeta):
         self.root_path = self.get_root_path(path)
         """Root path of the repository."""
 
+        # In case no valid repository could be found, and one should be created,
+        # do so.
+        if create and self.root_path is None:
+            # In case the repository path does not yet exist, create it first.
+            if not os.path.exists(path):
+                os.mkdir(path)
+
+            # Make sure that the root path of the repository points to the
+            # specified root path.
+            self.root_path = os.path.abspath(path)
+
+            # Finally, create the repository.
+            self.init()
+
         super(Repository, self).__init__(self)
 
-    def __new__(cls, path):
+    def __new__(cls, path, create=False):
         """Factory that will return the right repository wrapper depending on
         the repository type that is detected for *path*.
 
@@ -50,7 +64,7 @@ class Repository(object, metaclass=ABCMeta):
 
             raise ShelfException("no valid repository found at '%s'" % path)
         else:
-            return super(Repository, cls).__new__(cls, path)
+            return super(Repository, cls).__new__(cls, path, create)
 
     def _execute(self, command, stdin=None, stdout=subprocess.PIPE):
         """Executes the specified command relative to the repository root.
@@ -72,8 +86,20 @@ class Repository(object, metaclass=ABCMeta):
         return self._execute('patch -p1 --no-backup-if-mismatch --merge', stdout=open(os.devnull, 'w'), stdin=open(patch_path, 'r'))[0]
 
     @abstractmethod
+    def commit(self, message):
+        """Commits all changes in the repository with the specified commit
+        *message*.
+        """
+        pass
+
+    @abstractmethod
     def diff(self):
         """Returns a diff text for all changes in the repository."""
+        pass
+
+    @abstractmethod
+    def init(self, path):
+        """Creates a repository at the specified *path*."""
         pass
 
     @abstractmethod
@@ -110,9 +136,17 @@ class MercurialRepository(Repository):
         """See :py:meth:`~shelf.repository.Repository.add`."""
         self._execute('hg add %s' % (' '.join(file_names)))
 
+    def commit(self, message):
+        """See :py:meth:`~shelf.repository.Repository.commit`."""
+        self._execute('hg ci -m "%s" -u anonymous' % message)
+
     def diff(self):
         """See :py:meth:`~shelf.repository.Repository.diff`."""
         return self._execute('hg diff -a')[1]
+
+    def init(self):
+        """See :py:meth:`~shelf.repository.Repository.init`."""
+        self._execute('hg init')
 
     def remove(self, file_names):
         """See :py:meth:`~shelf.repository.Repository.remove`."""

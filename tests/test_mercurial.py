@@ -5,28 +5,29 @@ import subprocess
 from nose.tools import assert_in, assert_equal, assert_not_in, assert_raises, assert_true
 
 from shelf.exception import ShelfException
+from shelf.repository import MercurialRepository
 from shelf.shelf import Shelf
 from shelf.test_case import ShelfTestCase
 
-class TestMercurial(ShelfTestCase):
+class TestRepository(ShelfTestCase):
 
     PATCH_NAME = __name__
     SUB_DIRECTORY_NAME = 'sub'
 
-    def setUp(self):
-        # Initialize a Mercurial repository in the repository directory.
-        subprocess.Popen('hg init', shell=True, cwd=self.REPOSITORY_URI).wait()
+    # This is a mixin class that should not be executed on its own.
+    __test__ = False
 
+    def setUp(self):
         # Create a few files that can be modified later on.
-        for file_name in ['a', 'b', 'c']:
+        file_names = ['a', 'b', 'c']
+        for file_name in file_names:
             file_name = os.path.join(self.REPOSITORY_URI, file_name)
 
             f = open(file_name, 'w')
             f.write('123')
             f.close()
 
-            # Add the newly created file to the repository.
-            subprocess.Popen('hg add %s' % file_name, shell=True).wait()
+        self.repository.add(file_names)
 
         # Create a subdirectory.
         sub_directory = os.path.join(self.REPOSITORY_URI, self.SUB_DIRECTORY_NAME)
@@ -35,10 +36,10 @@ class TestMercurial(ShelfTestCase):
         open(keep_file_name, 'w').close()
 
         # Add the subdirectory to the repository.
-        subprocess.Popen('hg add %s' % keep_file_name, shell=True).wait()
+        self.repository.add([os.path.join(self.SUB_DIRECTORY_NAME, '.keep')])
 
         # Finally, commit the changes.
-        subprocess.Popen('hg ci -m "Initial commit." -u anonymous', shell=True, cwd=self.REPOSITORY_URI).wait()
+        self.repository.commit('Initial commit.')
 
     def tearDown(self):
         # Empty the repository directory.
@@ -50,7 +51,7 @@ class TestMercurial(ShelfTestCase):
                 else:
                     os.unlink(filename)
 
-        super(TestMercurial, self).tearDown()
+        super(TestRepository, self).tearDown()
 
     def test_creating_patch_outside_repository_raises_exception(self):
         """Tests that creating a patch in case the current working directory
@@ -137,7 +138,7 @@ class TestMercurial(ShelfTestCase):
         f.close()
 
         # Add the file to the repository.
-        subprocess.Popen('hg add %s' % file_name, shell=True).wait()
+        shelf.repository.add(['d'])
 
         # Create the patch.
         shelf.create_patch(self.PATCH_NAME)
@@ -161,7 +162,7 @@ class TestMercurial(ShelfTestCase):
 
         # Remove a file from the repository.
         file_name = os.path.join(self.REPOSITORY_URI, 'b')
-        subprocess.Popen('hg remove %s' % file_name, shell=True).wait()
+        shelf.repository.remove(['b'])
         assert_true(not os.path.exists(file_name))
 
         # Create the patch.
@@ -197,3 +198,14 @@ class TestMercurial(ShelfTestCase):
 
         # Creating a patch with an existing name should raise an exception.
         assert_raises(ShelfException, shelf.create_patch, self.PATCH_NAME)
+
+class TestMercurialRepository(TestRepository):
+
+    # Make sure to execute this test case.
+    __test__ = True
+
+    def setUp(self):
+        # Initialize a Mercurial repository in the repository directory.
+        self.repository = MercurialRepository(self.REPOSITORY_URI, create=True)
+
+        super(TestMercurialRepository, self).setUp()
