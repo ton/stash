@@ -216,7 +216,7 @@ class TestSubversionRepository(TestRepository):
     __test__ = True
 
     def setUp(self):
-        # Initialize a Mercurial repository in the repository directory.
+        # Initialize a Subversion repository in the repository directory.
         self.repository = SubversionRepository(self.REPOSITORY_URI, create=True)
 
         super(TestSubversionRepository, self).setUp()
