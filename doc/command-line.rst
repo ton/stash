@@ -2,9 +2,9 @@ Shelve command-line tool
 ------------------------
 
 This shelve command-line tool ``shelve.py`` supports shelving changes for
-Mercurial and Subversion repositories similar to ``git stash``.  One major
-difference with ``git stash`` is that changes are not stored in a stack, but
-rather as a named patch in a predefined location (``~/.shelf``).
+Mercurial and Subversion (1.7.x+) repositories similar to ``git stash``.  One
+major difference with ``git stash`` is that changes are not stored in a stack,
+but rather as a named patch in a predefined location (``~/.shelf``).
 
 Shelve allows to user to temporarily shelve all changes in a dirty working
 directory away to the shelf. All changes in the repository are reverted, and the

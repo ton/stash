@@ -174,9 +174,65 @@ class MercurialRepository(Repository):
 
     def status(self):
         """See :py:meth:`~shelf.repository.Repository.status`."""
-        # return set(self._execute('hg stat')[1].splitlines())
         result = set()
         for line in self._execute('hg stat')[1].splitlines():
+            if line[0] == '?':
+                result.add((FileStatus.Added, line[2:].strip()))
+            elif line[0] == '!':
+                result.add((FileStatus.Removed, line[2:].strip()))
+        return result
+
+class SubversionRepository(Repository):
+    """Concrete implementation of :py:class:`~shelf.repository.Repository` for
+    Subversion repositories.
+    """
+
+    def add(self, file_names):
+        """See :py:meth:`~shelf.repository.Repository.add`."""
+        self._execute('svn add --parents %s' % (' '.join(file_names)))
+
+    def commit(self, message):
+        """See :py:meth:`~shelf.repository.Repository.commit`."""
+        self._execute('svn ci -m "%s" --username anonymous' % message)
+
+    def diff(self):
+        """See :py:meth:`~shelf.repository.Repository.diff`."""
+        return self._execute('svn diff --git')[1]
+
+    def init(self):
+        """See :py:meth:`~shelf.repository.Repository.init`."""
+        self._execute('svnadmin create --fs-type fsfs .svn-db')
+        self._execute('svn co file://%s/.svn-db .' % self.root_path)
+
+    def remove(self, file_names):
+        """See :py:meth:`~shelf.repository.Repository.remove`."""
+        self._execute('svn rm %s' % (' '.join(file_names)))
+
+    def revert_all(self):
+        """See :py:meth:`~shelf.repository.Repository.revert_all`."""
+        self._execute('svn revert -R -q .')
+
+    @classmethod
+    def get_root_path(self, path):
+        """See :py:meth:`~shelf.repository.Repository.get_root_path`."""
+        # Look at the directories present in the current working directory. In
+        # case a .svn directory is present, we know we are in the root directory
+        # of a Subversion repository (for Subversion 1.7.x). In case no
+        # repository specific folder is found, and the current directory has a
+        # parent directory, look if a repository specific directory can be found
+        # in the parent directory.
+        while path != '/':
+            if '.svn' in os.listdir(path):
+                return path
+            path = os.path.abspath(os.path.join(path, os.pardir))
+
+        # No Subversion repository found.
+        return None
+
+    def status(self):
+        """See :py:meth:`~shelf.repository.Repository.status`."""
+        result = set()
+        for line in self._execute('svn stat')[1].splitlines():
             if line[0] == '?':
                 result.add((FileStatus.Added, line[2:].strip()))
             elif line[0] == '!':

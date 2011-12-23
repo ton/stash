@@ -5,7 +5,7 @@ import subprocess
 from nose.tools import assert_in, assert_equal, assert_not_in, assert_raises, assert_true
 
 from shelf.exception import ShelfException
-from shelf.repository import MercurialRepository
+from shelf.repository import MercurialRepository, SubversionRepository
 from shelf.shelf import Shelf
 from shelf.test_case import ShelfTestCase
 
@@ -209,3 +209,14 @@ class TestMercurialRepository(TestRepository):
         self.repository = MercurialRepository(self.REPOSITORY_URI, create=True)
 
         super(TestMercurialRepository, self).setUp()
+
+class TestSubversionRepository(TestRepository):
+
+    # Make sure to execute this test case.
+    __test__ = True
+
+    def setUp(self):
+        # Initialize a Mercurial repository in the repository directory.
+        self.repository = SubversionRepository(self.REPOSITORY_URI, create=True)
+
+        super(TestSubversionRepository, self).setUp()
