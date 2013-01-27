@@ -59,9 +59,9 @@ class Shelf(object):
 
     def apply_patch(self, patch_name):
         """Applies the patch *patch_name* on to the current working directory in
-        case the patch exists. In case applying the patch was successfull, the
+        case the patch exists. In case applying the patch was successful, the
         patch is automatically removed from the shelf. Returns ``True`` in case
-        applying the patch was successfull, otherwise ``False`` is returned.
+        applying the patch was successful, otherwise ``False`` is returned.
 
         :raises: :py:exc:`~shelf.exception.ShelfException` in case *patch_name* does not exist.
         """
@@ -92,7 +92,7 @@ class Shelf(object):
     def create_patch(self, patch_name):
         """Creates a patch based on the changes in the current repository. In
         case the specified patch *patch_name* already exists, ask the user to
-        overwrite the patch. In case creating the patch was successfull, all
+        overwrite the patch. In case creating the patch was successful, all
         changes in the current repository are reverted. Returns ``True`` in case
         a patch was created, and ``False`` otherwise.
 
