@@ -5,16 +5,16 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = 'shelve',
+    name = 'stash',
     version = '0.0.1',
     author = 'Ton van den Heuvel',
     author_email = 'tonvandenheuvel@gmail.com',
-    description = ('Shelve changes for source code repositories similar to `git stash`.'),
+    description = (' changes for source code repositories similar to `git stash`.'),
     license = 'BSD',
     packages=['shelf'],
     long_description=read('README.rst'),
-    scripts=['scripts/shelve.py'],
-    data_files=[('/etc/bash_completion.d/', ['shelve-completion.bash'])],
+    scripts=['scripts/stash.py'],
+    data_files=[('/etc/bash_completion.d/', ['stash-completion.bash'])],
     url='https://github.com/ton/shelve',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
