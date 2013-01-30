@@ -1,7 +1,7 @@
-Shelve API
-==========
+Stash API
+=========
 
-The shelve API exposes the functionality that is used by the shelve command-line
+The stash API exposes the functionality that is used by the shelve command-line
 tool to interact with the shelf.
 
 :py:class:`~shelf.shelf.Shelf` -- Class providing all operations on the shelf
