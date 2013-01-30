@@ -65,8 +65,8 @@ class TestRepository(ShelfTestCase):
         shelf = Shelf(os.path.join(self.REPOSITORY_URI, self.SUB_DIRECTORY_NAME))
         assert_equal(shelf.repository.root_path, os.path.abspath(self.REPOSITORY_URI))
 
-    def test_shelve_and_apply_change(self):
-        """Tests that it is possible to shelve changes in a repository.
+    def test_stash_and_apply_change(self):
+        """Tests that it is possible to stash changes in a repository.
         """
         shelf = Shelf(self.REPOSITORY_URI)
 
@@ -90,7 +90,7 @@ class TestRepository(ShelfTestCase):
         # The file should contain the expected changes.
         assert_equal(open(file_name, 'r').read(), '321')
 
-    def test_shelve_and_apply_conflicting_change(self):
+    def test_stash_and_apply_conflicting_change(self):
         """Test that applying a conflicting patch results in a merged file.
         """
         shelf = Shelf(self.REPOSITORY_URI)
