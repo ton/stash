@@ -2,42 +2,42 @@ import os
 import shutil
 import unittest
 
-from shelf.shelf import Shelf
+from .stash import Stash
 
-class ShelfTestCase(unittest.TestCase):
-    """Base class for test cases that test shelve functionality.
+class StashTestCase(unittest.TestCase):
+    """Base class for test cases that test stash functionality.
 
     This base class makes sure that all unit tests are executed in a sandbox
     environment.
     """
 
-    SHELF_PATH = os.path.join('tests', '.shelf')
+    STASH_PATH = os.path.join('tests', '.stash')
     REPOSITORY_URI = os.path.join('tests', '.repo')
 
     @classmethod
     def setUpClass(cls):
-        """Makes sure that shelve will look for patches in the patches path in
+        """Makes sure that stash will look for patches in the patches path in
         the test directory, and that the repository directory exists.
         """
         if not os.path.exists(cls.REPOSITORY_URI):
             os.mkdir(cls.REPOSITORY_URI)
 
-        if not os.path.exists(cls.SHELF_PATH):
-            os.mkdir(cls.SHELF_PATH)
+        if not os.path.exists(cls.STASH_PATH):
+            os.mkdir(cls.STASH_PATH)
 
-        Shelf.SHELF_PATH = cls.SHELF_PATH
+        Stash.STASH_PATH = cls.STASH_PATH
 
     @classmethod
     def tearDownClass(cls):
         """Cleans up the temporary patches path used for the unit tests."""
-        if os.path.exists(cls.SHELF_PATH):
-            shutil.rmtree(cls.SHELF_PATH)
+        if os.path.exists(cls.STASH_PATH):
+            shutil.rmtree(cls.STASH_PATH)
 
         # Clean up the temporary repository.
         if os.path.exists(cls.REPOSITORY_URI):
             shutil.rmtree(cls.REPOSITORY_URI)
 
     def tearDown(self):
-        """Removes all shelved patches."""
-        for patch_name in os.listdir(self.SHELF_PATH):
-            os.unlink(os.path.join(self.SHELF_PATH, patch_name))
+        """Removes all stashed patches."""
+        for patch_name in os.listdir(self.STASH_PATH):
+            os.unlink(os.path.join(self.STASH_PATH, patch_name))

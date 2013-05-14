@@ -11,11 +11,11 @@ setup(
     author_email = 'tonvandenheuvel@gmail.com',
     description = (' changes for source code repositories similar to `git stash`.'),
     license = 'BSD',
-    packages=['shelf'],
+    packages=['stash'],
     long_description=read('README.rst'),
     scripts=['scripts/stash.py'],
     data_files=[('/etc/bash_completion.d/', ['stash-completion.bash'])],
-    url='https://github.com/ton/shelve',
+    url='https://github.com/ton/stash',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',

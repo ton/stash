@@ -1,29 +1,29 @@
 Stash API
 =========
 
-The stash API exposes the functionality that is used by the shelve command-line
-tool to interact with the shelf.
+The stash API exposes the functionality that is used by the stash command-line
+tool to interact with the stash.
 
-:py:class:`~shelf.shelf.Shelf` -- Class providing all operations on the shelf
+:py:class:`~stash.stash.Stash` -- Class providing all operations on the stash
 -----------------------------------------------------------------------------
 
-.. autoclass:: shelf.shelf.Shelf
+.. autoclass:: stash.stash.Stash
     :members:
 
-:py:class:`~shelf.exception.ShelfException` -- Base exception class for shelf exceptions
+:py:class:`~stash.exception.StashException` -- Base exception class for stash exceptions
 ----------------------------------------------------------------------------------------
 
-.. autoclass:: shelf.exception.ShelfException
+.. autoclass:: stash.exception.StashException
     :members:
 
-:py:class:`~shelf.repository.Repository` -- Interface for implementations of repository operations
+:py:class:`~stash.repository.Repository` -- Interface for implementations of repository operations
 --------------------------------------------------------------------------------------------------
 
-.. autoclass:: shelf.repository.Repository
+.. autoclass:: stash.repository.Repository
     :members:
 
-:py:class:`~shelf.repository.MercurialRepository` -- Wrapper for baisc operations on Mercurial repositories
+:py:class:`~stash.repository.MercurialRepository` -- Wrapper for baisc operations on Mercurial repositories
 -----------------------------------------------------------------------------------------------------------
 
-.. autoclass:: shelf.repository.MercurialRepository
+.. autoclass:: stash.repository.MercurialRepository
     :members:

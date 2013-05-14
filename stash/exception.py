@@ -1,5 +1,5 @@
-class ShelfException(Exception):
+class StashException(Exception):
     """Base class for all exceptions generated during an operation on the
-    shelf.
+    stash.
     """
     pass

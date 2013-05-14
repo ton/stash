@@ -5,22 +5,22 @@ import sys
 
 from abc import ABCMeta, abstractmethod
 
-from shelf.exception import ShelfException
+from .exception import StashException
 
 class FileStatus(object):
-    """Enum for all possible file states that are handled by shelf."""
+    """Enum for all possible file states that are handled by stash."""
     Added, Removed = range(2)
 
 class Repository(object):
     """Abstract class that defines an interface for all functionality required
-    by :py:class:`~shelf.shelf.Shelf` to properly interface with a version
+    by :py:class:`~stash.stash.Stash` to properly interface with a version
     control system.
     """
     __metaclass__ = ABCMeta
 
     def __init__(self, path, create=False):
         """Creating a concrete repository instance is done using the factory
-        method :py:meth:`~shelf.repository.Repository.__new__`. After the
+        method :py:meth:`~stash.repository.Repository.__new__`. After the
         factory has created a class instance, the repository is initialized by
         specifying a *path* within the repository.
         """
@@ -48,7 +48,7 @@ class Repository(object):
         """Factory that will return the right repository wrapper depending on
         the repository type that is detected for *path*.
 
-        :raises: :py:exc:`~shelf.exception.ShelfException` in case no repository is
+        :raises: :py:exc:`~stash.exception.StashException` in case no repository is
             found at *path*.
         """
         # Iterate over all repository implementations, and for each
@@ -63,7 +63,7 @@ class Repository(object):
                         # could be found, create an instance of this class.
                         return super(Repository, repository_cls).__new__(repository_cls)
 
-            raise ShelfException("no valid repository found at '%s'" % path)
+            raise StashException("no valid repository found at '%s'" % path)
         else:
             return super(Repository, cls).__new__(cls, path, create)
 
@@ -129,37 +129,37 @@ class Repository(object):
         pass
 
 class MercurialRepository(Repository):
-    """Concrete implementation of :py:class:`~shelf.repository.Repository` for
+    """Concrete implementation of :py:class:`~stash.repository.Repository` for
     Mercurial repositories.
     """
 
     def add(self, file_names):
-        """See :py:meth:`~shelf.repository.Repository.add`."""
+        """See :py:meth:`~stash.repository.Repository.add`."""
         self._execute('hg add %s' % (' '.join(file_names)))
 
     def commit(self, message):
-        """See :py:meth:`~shelf.repository.Repository.commit`."""
+        """See :py:meth:`~stash.repository.Repository.commit`."""
         self._execute('hg ci -m "%s" -u anonymous' % message)
 
     def diff(self):
-        """See :py:meth:`~shelf.repository.Repository.diff`."""
+        """See :py:meth:`~stash.repository.Repository.diff`."""
         return self._execute('hg diff -a')[1]
 
     def init(self):
-        """See :py:meth:`~shelf.repository.Repository.init`."""
+        """See :py:meth:`~stash.repository.Repository.init`."""
         self._execute('hg init')
 
     def remove(self, file_names):
-        """See :py:meth:`~shelf.repository.Repository.remove`."""
+        """See :py:meth:`~stash.repository.Repository.remove`."""
         self._execute('hg rm %s' % (' '.join(file_names)))
 
     def revert_all(self):
-        """See :py:meth:`~shelf.repository.Repository.revert_all`."""
+        """See :py:meth:`~stash.repository.Repository.revert_all`."""
         self._execute('hg revert -q -C --all')
 
     @classmethod
     def get_root_path(self, path):
-        """See :py:meth:`~shelf.repository.Repository.get_root_path`."""
+        """See :py:meth:`~stash.repository.Repository.get_root_path`."""
         # Look at the directories present in the current working directory. In case
         # a .hg directory is present, we know we are in the root directory of a
         # Mercurial repository. In case no repository specific folder is found, and
@@ -174,7 +174,7 @@ class MercurialRepository(Repository):
         return None
 
     def status(self):
-        """See :py:meth:`~shelf.repository.Repository.status`."""
+        """See :py:meth:`~stash.repository.Repository.status`."""
         result = set()
         for line in self._execute('hg stat')[1].splitlines():
             if line[0] == '?':
@@ -184,38 +184,38 @@ class MercurialRepository(Repository):
         return result
 
 class SubversionRepository(Repository):
-    """Concrete implementation of :py:class:`~shelf.repository.Repository` for
+    """Concrete implementation of :py:class:`~stash.repository.Repository` for
     Subversion repositories.
     """
 
     def add(self, file_names):
-        """See :py:meth:`~shelf.repository.Repository.add`."""
+        """See :py:meth:`~stash.repository.Repository.add`."""
         self._execute('svn add --parents %s' % (' '.join(file_names)))
 
     def commit(self, message):
-        """See :py:meth:`~shelf.repository.Repository.commit`."""
+        """See :py:meth:`~stash.repository.Repository.commit`."""
         self._execute('svn ci -m "%s" --username anonymous' % message)
 
     def diff(self):
-        """See :py:meth:`~shelf.repository.Repository.diff`."""
+        """See :py:meth:`~stash.repository.Repository.diff`."""
         return self._execute('svn diff --git')[1]
 
     def init(self):
-        """See :py:meth:`~shelf.repository.Repository.init`."""
+        """See :py:meth:`~stash.repository.Repository.init`."""
         self._execute('svnadmin create --fs-type fsfs .svn-db')
         self._execute('svn co file://%s/.svn-db .' % self.root_path)
 
     def remove(self, file_names):
-        """See :py:meth:`~shelf.repository.Repository.remove`."""
+        """See :py:meth:`~stash.repository.Repository.remove`."""
         self._execute('svn rm %s' % (' '.join(file_names)))
 
     def revert_all(self):
-        """See :py:meth:`~shelf.repository.Repository.revert_all`."""
+        """See :py:meth:`~stash.repository.Repository.revert_all`."""
         self._execute('svn revert -R -q .')
 
     @classmethod
     def get_root_path(self, path):
-        """See :py:meth:`~shelf.repository.Repository.get_root_path`."""
+        """See :py:meth:`~stash.repository.Repository.get_root_path`."""
         # Look at the directories present in the current working directory. In
         # case a .svn directory is present, we know we are in the root directory
         # of a Subversion repository (for Subversion 1.7.x). In case no
@@ -231,7 +231,7 @@ class SubversionRepository(Repository):
         return None
 
     def status(self):
-        """See :py:meth:`~shelf.repository.Repository.status`."""
+        """See :py:meth:`~stash.repository.Repository.status`."""
         result = set()
         for line in self._execute('svn stat')[1].splitlines():
             if line[0] == '?':

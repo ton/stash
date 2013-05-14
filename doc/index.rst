@@ -6,7 +6,7 @@
 Stash documentation
 ====================
 
-Welcome to the documentation of stash, a tool to temporarily shelve away
+Welcome to the documentation of stash, a tool to temporarily stash away
 changes for Mercurial and Subversion repositories.
 
 Installation is simple:
