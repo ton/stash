@@ -11,11 +11,12 @@ class FileStatus(object):
     """Enum for all possible file states that are handled by shelf."""
     Added, Removed = range(2)
 
-class Repository(object, metaclass=ABCMeta):
+class Repository(object):
     """Abstract class that defines an interface for all functionality required
     by :py:class:`~shelf.shelf.Shelf` to properly interface with a version
     control system.
     """
+    __metaclass__ = ABCMeta
 
     def __init__(self, path, create=False):
         """Creating a concrete repository instance is done using the factory

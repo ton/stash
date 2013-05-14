@@ -23,7 +23,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'shelve'
+project = 'stash'
 copyright = '2011, Ton van den Heuvel'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -72,7 +72,7 @@ html_show_sphinx = True
 html_show_copyright = True
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'shelvedoc'
+htmlhelp_basename = 'stashdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -91,7 +91,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'shelve.tex', 'shelve Documentation',
+  ('index', 'stash.tex', 'stash Documentation',
    'Ton van den Heuvel', 'manual'),
 ]
 
@@ -101,7 +101,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'shelve', 'shelve Documentation',
+    ('index', 'stash', 'stash Documentation',
      ['Ton van den Heuvel'], 1)
 ]
 
@@ -112,7 +112,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'shelve', 'shelve Documentation',
-   'Ton van den Heuvel', 'shelve', 'Shelve changes for source code repositories similar to `git stash`.',
+  ('index', 'stash', 'stash Documentation',
+   'Ton van den Heuvel', 'stash', 'Stash changes for source code repositories similar to `git stash`.',
    'Miscellaneous'),
 ]

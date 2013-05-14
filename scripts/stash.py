@@ -6,8 +6,8 @@ import os
 from shelf.exception import ShelfException
 from shelf.shelf import Shelf
 
-parser = argparse.ArgumentParser(description='Shelve HG changes to the shelf directory (~/.shelf).')
-parser.add_argument('-l', '--list', dest='show_list', action='store_true', help='list all currently shelved patches')
+parser = argparse.ArgumentParser(description='Stash HG changes to the shelf directory (~/.shelf).')
+parser.add_argument('-l', '--list', dest='show_list', action='store_true', help='list all currently stashed patches')
 parser.add_argument('-r', '--remove', dest='remove_patch', action='store_true', \
         help='remove the specified patch from the shelf')
 parser.add_argument('-s', '--show', dest='show_patch', action='store_true', \
@@ -31,11 +31,11 @@ try:
         shelf = Shelf(os.getcwd())
         if args.apply_patch:
             if shelf.apply_patch(args.patch_name):
-                print("Applying patch '%s' succeeded, shelved patch has been removed." % patch_name)
+                print("Applying patch '%s' succeeded, stashed patch has been removed." % patch_name)
             else:
                 # The patch did not apply cleanly, inform the user that the
                 # patch will not be removed.
-                print("Patch '%s' did not apply successfully, shelved patch will not be removed." % patch_name)
+                print("Patch '%s' did not apply successfully, stashed patch will not be removed." % patch_name)
         else:
             # Check if patch already exists, if it does, issue a warning and
             # give the user an option to overwrite the patch.
@@ -49,7 +49,7 @@ try:
                         args.patch_name = input("Please provide a different patch name: ")
 
             if shelf.create_patch(args.patch_name):
-                print("Done shelving changes for patch '%s'." % patch_name)
+                print("Done stashing changes for patch '%s'." % patch_name)
             else:
                 print("No changes in repository, patch '%s' not created." % patch_name)
     else:
